@@ -1,14 +1,19 @@
-import React from "react";
-import { View, Text, Image, StyleSheet } from "react-native";
-
-const card_meta = "this is some meta data"; // Deliberately add unused variable
+import React, { useRef, useState } from 'react';
+import {
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  Animated,
+  TouchableWithoutFeedback,
+} from 'react-native';
 
 type CardProps = {
   name: string;
   set: string;
   cost: number;
   power: number;
-  hp: string;
+  hp: string | number;
   type: string;
   traits: string[];
   rarity: string;
@@ -26,69 +31,152 @@ export default function Card({
   rarity,
   frontArt,
 }: CardProps) {
+  const animatedValue = useRef(new Animated.Value(0)).current;
+  const [flipped, setFlipped] = useState(false);
+
+  const frontRotation = animatedValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '180deg'],
+  });
+
+  const backRotation = animatedValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['180deg', '360deg'],
+  });
+
+  const flipCard = () => {
+    if (flipped) {
+      Animated.timing(animatedValue, {
+        toValue: 0,
+        duration: 500,
+        useNativeDriver: true,
+      }).start(() => setFlipped(false));
+    } else {
+      Animated.timing(animatedValue, {
+        toValue: 1,
+        duration: 500,
+        useNativeDriver: true,
+      }).start(() => setFlipped(true));
+    }
+  };
+
   return (
-    <View style={styles.card} testID="card">
-      <View style={styles.imageContainer}>
-        <Image
-          testID="card-image"
-          source={{ uri: frontArt }}
-          style={styles.image}
-          resizeMode="cover"
-        />
+    <TouchableWithoutFeedback onPress={flipCard}>
+      <View style={styles.cardContainer}>
+        {/* Front Side */}
+        <Animated.View
+          style={[
+            styles.card,
+            {
+              transform: [{ perspective: 1000 }, { rotateY: frontRotation }],
+            },
+          ]}
+        >
+          <Image source={{ uri: frontArt }} style={styles.image} />
+        </Animated.View>
+        {/* Back Side */}
+        <Animated.View
+          style={[
+            styles.card,
+            styles.cardBack,
+            {
+              transform: [{ perspective: 1000 }, { rotateY: backRotation }],
+            },
+          ]}
+        >
+          <Text style={styles.title}>{name}</Text>
+          <Text style={styles.subtitle}>{type}</Text>
+          <View style={styles.statsContainer}>
+            <View style={styles.statsGrid}>
+              <View style={styles.statItem}>
+                <Text style={styles.statLabel}>Set</Text>
+                <Text style={styles.statValue}>{set}</Text>
+              </View>
+              <View style={styles.statItem}>
+                <Text style={styles.statLabel}>Traits</Text>
+                <Text style={styles.statValue}>{traits.join(', ')}</Text>
+              </View>
+              <View style={styles.statItem}>
+                <Text style={styles.statLabel}>Cost</Text>
+                <Text style={styles.statValue}>{cost}</Text>
+              </View>
+              <View style={styles.statItem}>
+                <Text style={styles.statLabel}>Power</Text>
+                <Text style={styles.statValue}>{power}</Text>
+              </View>
+              <View style={styles.statItem}>
+                <Text style={styles.statLabel}>HP</Text>
+                <Text style={styles.statValue}>{hp}</Text>
+              </View>
+              <View style={styles.statItem}>
+                <Text style={styles.statLabel}>Rarity</Text>
+                <Text style={styles.statValue}>{rarity}</Text>
+              </View>
+            </View>
+          </View>
+        </Animated.View>
       </View>
-      <View style={styles.content}>
-        <Text style={styles.title}>{name}</Text>
-        <Text style={styles.detail}>Set: {set}</Text>
-        <Text style={styles.detail}>Type: {type}</Text>
-        <Text style={styles.detail}>Traits: {traits?.join(", ")}</Text>
-        <Text style={styles.detail}>Cost: {cost}</Text>
-        <Text style={styles.detail}>Power: {power}</Text>
-        <Text style={styles.detail}>HP: {hp}</Text>
-        <Text style={styles.detail}>Rarity: {rarity}</Text>
-      </View>
-    </View>
+    </TouchableWithoutFeedback>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    backgroundColor: "#1F2937",
-    borderRadius: 8,
-    padding: 8,
-    margin: 8,
-    flexDirection: "row",
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
+  cardContainer: {
+    width: 370,
+    height: 513,
+    margin: 16,
   },
-  imageContainer: {
-    width: 120,
-    height: 120,
-    marginRight: 12,
+  card: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    backfaceVisibility: 'hidden',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f8f8f8',
+    borderRadius: 8,
+    overflow: 'hidden',
+  },
+  cardBack: {
+    backgroundColor: '#1E2A38', 
   },
   image: {
-    width: "100%",
-    height: "100%",
-    borderRadius: 8,
-  },
-  content: {
-    flex: 1,
-    justifyContent: "center",
+    width: '100%',
+    height: '100%',
   },
   title: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#FFFFFF",
-    marginBottom: 4,
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#98C1D9', 
   },
-  detail: {
+  subtitle: {
+    fontSize: 18,
+    color: '#98C1D9',
+    marginBottom: 16,
+  },
+  statsContainer: {
+    backgroundColor: 'rgba(255, 255, 255, 0.32)', 
+    padding: 12,
+    borderRadius: 8,
+  },
+  statsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-around',
+    marginTop: 16,
+  },
+  statItem: {
+    width: '30%',
+    marginBottom: 16,
+    alignItems: 'center',
+  },
+  statLabel: {
     fontSize: 14,
-    color: "#D1D5DB",
-    marginBottom: 2,
+    fontWeight: 'bold',
+    color: '#E0E0E0', 
+  },
+  statValue: {
+    fontSize: 14,
+    color: '#FFFFFF', 
   },
 });

@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 // CardList.tsx
 import React, { useState, useEffect } from "react";
 import {
@@ -69,18 +70,13 @@ export default function CardList({ hp = "" }: CardListProps) {
 
   useEffect(() => {
     const fetchCardData = async () => {
-      if (!hp) {
-        setCards([]);
-        setLoading(false);
-        return;
-      }
-
       setLoading(true);
       setError(null);
 
       try {
-        const result = await searchCards(hp);
-        const formattedCards = result.data.map(transformCardResponse);
+        const result = await searchCards(hp || ""); // Expecting an array here
+        console.log("Fetched Cards:", result); // Log to verify data
+        const formattedCards = result.map(transformCardResponse);
 
         setCards(
           formattedCards.sort((a, b) =>
@@ -88,7 +84,6 @@ export default function CardList({ hp = "" }: CardListProps) {
           ),
         );
       } catch (err) {
-        //setError("Failed to load cards");
         setError(err instanceof Error ? err.message : "Failed to load cards");
       } finally {
         setLoading(false);

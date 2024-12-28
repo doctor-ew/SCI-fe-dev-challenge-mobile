@@ -1,7 +1,8 @@
+/* eslint-disable no-console */
 // api.ts
 import axios from "axios";
 
-const BASE_URL = "http://localhost:8010/proxy";
+const BASE_URL = "http://localhost:8010";
 
 export class APIError extends Error {
   constructor(
@@ -41,37 +42,31 @@ export interface APIResponse<T> {
   message?: string;
 }
 
-export const fetchCatalog = async (): Promise<APIResponse<string[]>> => {
+export const fetchCatalog = async (): Promise<string[]> => {
   try {
-    const response = await axios.get<APIResponse<string[]>>(
-      `${BASE_URL}/catalog/hps`,
+    const response = await axios.get<{ id: number; name: string }[]>(
+      `${BASE_URL}/catalog/hps`
     );
-    return response.data;
+    return response.data.map((item) => item.name); // Transform to array of strings
   } catch (error) {
     if (axios.isAxiosError(error)) {
       throw new APIError(
         `Failed to fetch catalog data: ${error.message}`,
-        error,
+        error
       );
     }
     throw new APIError("Failed to fetch catalog data");
   }
 };
 
-export const searchCards = async (
-  hp: string,
-): Promise<APIResponse<CardResponse[]>> => {
+export const searchCards = async (hp: string): Promise<CardResponse[]> => {
   try {
-    const response = await axios.get<APIResponse<CardResponse[]>>(
-      `${BASE_URL}/cards/search`,
-      {
-        params: {
-          q: `h=${hp}`,
-          pretty: true,
-        },
-      },
-    );
-    return response.data;
+    const response = await axios.get<CardResponse[]>(`${BASE_URL}/cards`, {
+      params: hp ? { Catalog: hp, pretty: true } : { pretty: true },
+    });
+
+    console.log("API Response in searchCards:", response.data); // Log to verify structure
+    return response.data; // Directly return the array
   } catch (error) {
     if (axios.isAxiosError(error)) {
       throw new APIError(`Failed to fetch card data: ${error.message}`, error);
