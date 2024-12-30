@@ -15,7 +15,7 @@ const middlewares = jsonServer.defaults();
 // CORS Configuration
 app.use(
   cors({
-    origin: 'http://localhost:8081', // Your frontend URL
+    origin: 'http://localhost:8081', 
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
   })
@@ -71,8 +71,8 @@ app.get('/cards/search', (req, res) => {
     const cards = router.db
       .get('cards')
       .filter((card: Card) => {
-        if (!Catalog) return true; // Return all cards if no Catalog is provided
-        return card.Catalog === Catalog; // Filter by Catalog if specified
+        if (!Catalog) return true; 
+        return card.Catalog === Catalog;
       })
       .value();
 

@@ -1,8 +1,7 @@
-/* eslint-disable no-console */
 // api.ts
-import axios from "axios";
+import axios from 'axios';
 
-const BASE_URL = "http://localhost:8010";
+const BASE_URL = 'http://localhost:8010';
 
 export class APIError extends Error {
   constructor(
@@ -10,7 +9,7 @@ export class APIError extends Error {
     public originalError?: unknown,
   ) {
     super(message);
-    this.name = "APIError";
+    this.name = 'APIError';
   }
 }
 
@@ -55,7 +54,7 @@ export const fetchCatalog = async (): Promise<string[]> => {
         error
       );
     }
-    throw new APIError("Failed to fetch catalog data");
+    throw new APIError('Failed to fetch catalog data');
   }
 };
 
@@ -65,12 +64,11 @@ export const searchCards = async (hp: string): Promise<CardResponse[]> => {
       params: hp ? { Catalog: hp, pretty: true } : { pretty: true },
     });
 
-    console.log("API Response in searchCards:", response.data); // Log to verify structure
-    return response.data; // Directly return the array
+    return response.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
       throw new APIError(`Failed to fetch card data: ${error.message}`, error);
     }
-    throw new APIError("Failed to fetch card data");
+    throw new APIError('Failed to fetch card data');
   }
 };
