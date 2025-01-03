@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -6,10 +6,10 @@ import {
   TouchableOpacity,
   StyleSheet,
   Animated,
-} from 'react-native';
+} from "react-native";
 
-import Card from './Card';
-import { searchCards, CardResponse } from '../api/api';
+import Card from "./Card";
+import { searchCards, CardResponse } from "../api/api";
 
 type CardData = {
   set: string;
@@ -39,40 +39,48 @@ type CardListProps = {
   range?: string;
 };
 
-const transformCardResponse = (card: CardResponse, index: number): CardData => ({
-  set: card.Set || 'Unknown Set',
+const transformCardResponse = (
+  card: CardResponse,
+  index: number
+): CardData => ({
+  set: card.Set || "Unknown Set",
   number: card.Number || `Unknown Number ${index}`,
   name: card.Name || `Unnamed Card ${index}`,
-  type: card.Type || 'Unknown Type',
+  type: card.Type || "Unknown Type",
   aspects: card.Aspects || [],
   traits: card.Traits || [],
   arenas: card.Arenas || [],
-  cost: parseInt(card.Cost || '0', 10),
-  power: parseInt(card.Power || '0', 10),
-  hp: parseInt(card.HP || '0', 10),
-  fronttext: card.FrontText || 'No description available.',
+  cost: parseInt(card.Cost || "0", 10),
+  power: parseInt(card.Power || "0", 10),
+  hp: parseInt(card.HP || "0", 10),
+  fronttext: card.FrontText || "No description available.",
   doublesided: card.DoubleSided ?? false,
-  rarity: card.Rarity || 'Common',
+  rarity: card.Rarity || "Common",
   unique: card.Unique ?? false,
-  artist: card.Artist || 'Unknown Artist',
-  varianttype: card.VariantType || 'None',
-  marketprice: card.MarketPrice || 'N/A',
-  foilprice: card.FoilPrice || 'N/A',
-  frontArt: card.FrontArt || 'https://via.placeholder.com/150',
-  id: `${card.Set || 'unknown-set'}-${card.Number || `unknown-number-${index}`}`,
+  artist: card.Artist || "Unknown Artist",
+  varianttype: card.VariantType || "None",
+  marketprice: card.MarketPrice || "N/A",
+  foilprice: card.FoilPrice || "N/A",
+  frontArt: card.FrontArt || "https://via.placeholder.com/150",
+  id: `${card.Set || "unknown-set"}-${card.Number || `unknown-number-${index}`}`,
 });
 
-export default function CardList({ hp = '', range = '' }: CardListProps) {
+export default function CardList({ hp = "", range = "" }: CardListProps) {
   const [cards, setCards] = useState<CardData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [sortKey, setSortKey] = useState<keyof CardData>('name');
+  const [sortKey, setSortKey] = useState<keyof CardData>("name");
+  const [slideAnimation] = useState(new Animated.Value(0));
   const animatedValues = useRef<
     { translateX: Animated.Value; scale: Animated.Value }[]
   >([]).current;
 
   useEffect(() => {
     const fetchCardData = async () => {
+      if (cards.length > 0) {
+        animateSlideOut();
+      }
+
       setLoading(true);
       setError(null);
 
@@ -82,7 +90,7 @@ export default function CardList({ hp = '', range = '' }: CardListProps) {
 
         let filteredCards = formattedCards;
         if (range) {
-          const [minHp, maxHp] = range.split('-').map(Number);
+          const [minHp, maxHp] = range.split("-").map(Number);
           filteredCards = formattedCards.filter(
             (card) => card.hp >= minHp && card.hp <= maxHp
           );
@@ -104,7 +112,7 @@ export default function CardList({ hp = '', range = '' }: CardListProps) {
 
         animateZoomIn();
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load cards');
+        setError(err instanceof Error ? err.message : "Failed to load cards");
       } finally {
         setLoading(false);
       }
@@ -124,6 +132,16 @@ export default function CardList({ hp = '', range = '' }: CardListProps) {
     });
   };
 
+  const animateSlideOut = () => {
+    Animated.timing(slideAnimation, {
+      toValue: -1000, // Slide to the left
+      duration: 600,
+      useNativeDriver: true,
+    }).start(() => {
+      slideAnimation.setValue(0);
+    });
+  };
+
   const renderSortButton = (
     label: string,
     key: keyof CardData,
@@ -138,11 +156,11 @@ export default function CardList({ hp = '', range = '' }: CardListProps) {
   );
 
   const renderItem = ({ item, index }: { item: CardData; index: number }) => {
-    const { translateX, scale } = animatedValues[index];
+    const { scale } = animatedValues[index];
     return (
       <Animated.View
         style={{
-          transform: [{ translateX }, { scale }],
+          transform: [{ translateX: slideAnimation }, { scale }],
         }}
       >
         <Card {...item} />
@@ -154,12 +172,13 @@ export default function CardList({ hp = '', range = '' }: CardListProps) {
     return (
       <View style={styles.container}>
         <Text style={styles.welcomeText}>
-          Welcome to the Card Browser! Select an HP or Range of HP to start browsing.
+          Welcome to the Card Browser! Select an HP or Range of HP to start
+          browsing.
         </Text>
       </View>
     );
   }
-  
+
   if (loading) {
     return (
       <View style={styles.container}>
@@ -167,7 +186,7 @@ export default function CardList({ hp = '', range = '' }: CardListProps) {
       </View>
     );
   }
-  
+
   if (error) {
     return (
       <View style={styles.container}>
@@ -175,7 +194,7 @@ export default function CardList({ hp = '', range = '' }: CardListProps) {
       </View>
     );
   }
-  
+
   if (cards.length === 0) {
     return (
       <View style={styles.container}>
@@ -183,14 +202,14 @@ export default function CardList({ hp = '', range = '' }: CardListProps) {
       </View>
     );
   }
-  
+
   return (
     <View style={styles.container}>
       <View style={styles.sortButtons}>
-        {renderSortButton('Name', 'name', '#3B82F6')}
-        {renderSortButton('Set', 'set', '#10B981')}
-        {renderSortButton('Cost', 'cost', '#8B5CF6')}
-        {renderSortButton('Power', 'power', '#EF4444')}
+        {renderSortButton("Name", "name", "#3B82F6")}
+        {renderSortButton("Set", "set", "#10B981")}
+        {renderSortButton("Cost", "cost", "#8B5CF6")}
+        {renderSortButton("Power", "power", "#EF4444")}
       </View>
       <FlatList
         data={cards}
@@ -205,46 +224,46 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    backgroundColor: '#111827',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "#111827",
+    justifyContent: "center",
+    alignItems: "center",
   },
   sortButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginBottom: 16,
-    flexWrap: 'wrap',
+    flexWrap: "wrap",
   },
-  
+
   sortButton: {
     paddingVertical: 8,
     paddingHorizontal: 12,
     borderRadius: 8,
     borderWidth: 2,
-    borderColor: '#FFFFFF',
+    borderColor: "#FFFFFF",
     margin: 4,
   },
-  
+
   sortButtonText: {
-    color: '#FFFFFF',
-    fontWeight: 'bold',
+    color: "#FFFFFF",
+    fontWeight: "bold",
   },
   messageText: {
-    textAlign: 'center',
-    color: '#FFFFFF',
+    textAlign: "center",
+    color: "#FFFFFF",
     fontSize: 16,
     padding: 16,
   },
   welcomeText: {
-    textAlign: 'center',
-    color: '#FFFFFF',
+    textAlign: "center",
+    color: "#FFFFFF",
     fontSize: 18,
     padding: 16,
-    fontWeight: 'bold',
-  },  
+    fontWeight: "bold",
+  },
   errorText: {
-    textAlign: 'center',
-    color: '#FF4C4C',
+    textAlign: "center",
+    color: "#FF4C4C",
     fontSize: 16,
     padding: 16,
   },

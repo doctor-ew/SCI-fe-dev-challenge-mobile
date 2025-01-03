@@ -3,7 +3,6 @@
 I made my own data for this project and install json-server. The server needs to be run in order for the cards to load. Please run the following commands 
 
    - npx expo start --web
-   - json-server --watch src/api/api.json --routes src/api/routes.json --port 8010
 
 ---
 
