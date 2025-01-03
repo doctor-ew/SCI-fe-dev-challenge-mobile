@@ -6,13 +6,13 @@ import { fetchCatalog } from '../api/api';
 
 type DropdownProps = {
   onSelect: (selectedValue: string) => void;
+  selectedValue: string;
 };
 
-export default function Dropdown({ onSelect }: DropdownProps) {
+export default function Dropdown({ onSelect, selectedValue }: DropdownProps) {
   const [options, setOptions] = useState<string[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedValue, setSelectedValue] = useState<string>('');
 
   useEffect(() => {
     const loadOptions = async () => {
@@ -31,69 +31,53 @@ export default function Dropdown({ onSelect }: DropdownProps) {
     void loadOptions();
   }, []);
 
-  if (loading) {
-    return <Text style={styles.loadingText}>Loading options...</Text>;
-  }
-
-  if (error) {
-    return <Text style={styles.errorText}>Error: {error}</Text>;
-  }
-
   return (
     <View style={styles.container}>
-      <Picker
-        testID='picker'
-        selectedValue={selectedValue}
-        onValueChange={(itemValue: string) => {
-          setSelectedValue(itemValue);
-          onSelect(itemValue);
-        }}
-        style={styles.picker}
-        dropdownIconColor='#3B82F6'
-      >
-        <Picker.Item label='Select a Category' value='' style={styles.pickerItem} />
-        {options.map((option) => (
-          <Picker.Item
-            key={option}
-            label={option}
-            value={option}
-            style={styles.pickerItem}
-          />
-        ))}
-      </Picker>
+      <Text style={styles.label}>HP:</Text>
+      {loading && <Text style={styles.loadingText}>Loading options...</Text>}
+      {error && <Text style={styles.errorText}>Error: {error}</Text>}
+      {!loading && !error && (
+        <Picker
+          selectedValue={selectedValue}
+          onValueChange={onSelect}
+          style={styles.picker}
+        >
+          <Picker.Item label='Select HP' value='' />
+          {options.map((option) => (
+            <Picker.Item key={option} label={option} value={option} />
+          ))}
+        </Picker>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    marginVertical: 10,
-    borderWidth: 2,
-    borderColor: '#3B82F6',
-    borderRadius: 8,
-    backgroundColor: 'transparent',
-    overflow: 'hidden',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#EAB308', 
   },
   picker: {
-    color: '#3B82F6',
-    fontSize: 16,
-    height: 50,
-    backgroundColor: 'transparent',
-  },
-  pickerItem: {
-    color: '#3B82F6',
+    width: 128, 
+    height: 40,
+    color: '#595e66', 
+    borderWidth: 1,
+    borderColor: '#FBBF24', 
+    borderRadius: 6,
     backgroundColor: 'transparent',
   },
   loadingText: {
-    textAlign: 'center',
-    color: '#5FB3B3',
-    padding: 10,
-    fontSize: 16,
+    fontSize: 14,
+    color: '#4B5563',
   },
   errorText: {
-    textAlign: 'center',
-    color: '#E63946',
-    padding: 10,
-    fontSize: 16,
+    fontSize: 14,
+    color: '#EF4444', 
   },
 });
