@@ -27,27 +27,28 @@ describe("Dropdown Component", () => {
 
   it("shows loading state initially", () => {
     mockedFetchCatalog.mockImplementation(() => new Promise(() => {}));
-    render(<Dropdown onSelect={mockOnSelect} />);
+    render(<Dropdown onSelect={mockOnSelect} selectedValue="" />);
     expect(screen.getByText("Loading options...")).toBeTruthy();
   });
 
   it("displays error message when API fails", async () => {
-    mockedFetchCatalog.mockRejectedValueOnce(new Error("Error: An error occurred"));
-    const { findByText } = render(<Dropdown onSelect={mockOnSelect} />);
-    const errorMessage = await findByText(/Error: Network error/i);
-    expect(errorMessage).toBeTruthy();
+    mockedFetchCatalog.mockRejectedValueOnce(new Error("An error occurred"));
+    render(<Dropdown onSelect={mockOnSelect} selectedValue="" />);
+    await waitFor(() => {
+      expect(screen.getByText("Error: An error occurred")).toBeTruthy();
+    });
   });
 
   it("renders options and handles selection", async () => {
-    mockedFetchCatalog.mockResolvedValueOnce({ data: mockOptions });
-    render(<Dropdown onSelect={mockOnSelect} />);
+    mockedFetchCatalog.mockResolvedValueOnce(mockOptions);
+    render(<Dropdown onSelect={mockOnSelect} selectedValue="" />);
 
     await waitFor(() => {
       expect(screen.queryByText("Loading options...")).toBeFalsy();
     });
 
     const picker = screen.getByTestId("picker");
-    fireEvent(picker, "valueChange", "HP1");
+    fireEvent(picker, "onValueChange", "HP1");
     expect(mockOnSelect).toHaveBeenCalledWith("HP1");
   });
 });

@@ -2,19 +2,20 @@ import React, { useState } from "react";
 import { SafeAreaView, StyleSheet, Platform } from "react-native";
 
 import CardList from "./src/components/CardList";
-import Dropdown from "./src/components/Dropdown";
+import Header from "./src/components/Header"; 
 import ParallaxScrollView from "./src/components/ParallaxScrollView";
 
 export default function App() {
   const [selectedHP, setSelectedHP] = useState<string>("");
+  const [selectedRange, setSelectedRange] = useState<string>("");
 
   // Simple header image component could be added here
   const HeaderImage = () => null;
 
   const content = (
     <>
-      <Dropdown onSelect={setSelectedHP} />
-      <CardList hp={selectedHP} />
+      <Header onSelectHp={setSelectedHP} onSelectRange={setSelectedRange} />
+      <CardList hp={selectedHP} range={selectedRange} />
     </>
   );
 
